@@ -9,15 +9,17 @@ class Perceptron(object):
 
     def fit(self, X, y):
         rgen = np.random.RandomState(self.random_state)
-        self.w_ = rgen.normal(size=X.shape[1] + 1)
-
+        self.w_ = rgen.normal(loc=0.0, scale=0.01, size=X.shape[1] + 1)
+        self.errors_ = []
         for _ in range(self.n_iter):
+            errors = 0
             for xi, yi in zip(X, y):
                 yhat = self.predict(xi)
                 delta_w = self.eta * (yi - yhat)
                 self.w_[1:] += delta_w * xi
                 self.w_[0] += delta_w
-
+                errors += int(delta_w != 0)
+            self.errors_.append(errors)
         return self
 
     def output(self, X):
