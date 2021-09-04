@@ -1,0 +1,1 @@
+I implement this Adaline algorithm with Stochastic gradient descent
