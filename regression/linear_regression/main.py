@@ -1,4 +1,8 @@
-from linear_regression import RidgeLinearRegressionSGD
+from linear_regression import (
+    RidgeRegressionMiniBatchGD,
+    LinearRegressionSGD,
+    LinearRegression
+)
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_diabetes, load_boston
 from sklearn.preprocessing import StandardScaler
@@ -8,35 +12,60 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
+plt.style.use('seaborn')
+
+
 def f(x, slope, intercept):
     return x * slope + intercept
 
+
+N = 500
 slope = 5
 intercept = 3
+random_state = 35
 
-X = 3 * np.random.rand(2000, 1)
-y = f(X[:, 0], slope, intercept) + np.random.rand(2000,) - 0.1
+rs = np.random.RandomState(random_state)
 
-Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.2, random_state=12)
-lr = RidgeLinearRegressionSGD(eta=0.00001, alpha=0.0001, batch_size=64, n_iter=2000, random_state=12)
+X = 3 * rs.rand(N, 1)
+y = f(X[:, 0], slope, intercept) + rs.rand(N,) - 0.1
+
+
+Xtrain, Xtest, ytrain, ytest = train_test_split(
+    X, y, test_size=0.2, random_state=random_state)
+
+lr_params = dict(eta=0.0001, n_iter=500, random_state=random_state)
+ridge_params = dict(eta=0.0001, alpha=0.001,
+                    batch_size=32, n_iter=500, random_state=random_state)
+lr_sgd_params = dict(eta=0.0001, n_iter=500, random_state=random_state)
+
+lr = LinearRegression(**lr_params)
+ridge_mini = RidgeRegressionMiniBatchGD(**ridge_params)
+lr_sgd = LinearRegressionSGD(**lr_sgd_params)
+
 lr.fit(Xtrain, ytrain)
+ridge_mini.fit(Xtrain, ytrain)
+lr_sgd.fit(Xtrain, ytrain)
 
-train_predicted = lr.predict(Xtrain)
-test_predicted = lr.predict(Xtest)
 
-r2_train = lr.score(Xtrain, ytrain)
-r2_test = lr.score(Xtest, ytest)
-print(r2_train, r2_test)
-print(lr.w)
+def plot_line(ax, X, y, label, regressor):
+    r2_train = regressor.score(Xtrain, ytrain)
+    r2_test = regressor.score(Xtest, ytest)
+    ax.scatter(X, y, c='orange', label='datasets')
+    ax.plot(X, f(X, slope, intercept), color='purple',
+            label=f'${slope}x + {intercept}$ (origin)')
+    ax.plot(X, f(X, round(regressor.w[1], 2), round(regressor.w[0], 2)),
+            color='blue', label=f'${round(regressor.w[1], 2)}x + {round(regressor.w[0], 2)}$ (modeled)')
+    ax.legend(loc='best')
+    ax.set_title(label)
+    fontsize = 'small'
+    ax.text(1, 0.5, '$R^2 Train: {}$'.format(r2_train), fontsize=fontsize)
+    ax.text(1, 0, '$R^2 Test: {}$'.format(r2_test), fontsize=fontsize)
+    return ax
 
-# rmse_train = mean_squared_error(ytrain, train_predicted, squared=False)
-# rmse_test = mean_squared_error(ytest, test_predicted, squared=True)
-# print(rmse_train, rmse_test)
 
-plt.scatter(Xtrain, ytrain, label='train')
-plt.scatter(Xtest, ytest, label='test')
-predicted = lr.predict(Xtest)
-plt.plot(Xtest, f(Xtest, slope, intercept), c='red', label='origin line')
-plt.plot(Xtest, lr.predict(Xtest), c='yellow', label='model line')
-plt.legend(loc='best')
-plt.show()
+fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(15, 12))
+ax[0] = plot_line(ax[0], X, y, 'Linear Regression', lr)
+ax[1] = plot_line(ax[1], X, y, 'Ridge Regression MiniBatch', ridge_mini)
+ax[2] = plot_line(ax[2], X, y, 'Linear Regression SGD', lr_sgd)
+fig.tight_layout()
+plt.savefig('linear.png')
