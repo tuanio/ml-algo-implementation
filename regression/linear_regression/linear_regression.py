@@ -1,8 +1,9 @@
 import numpy as np
 
-class LinearRegressionSGD(object):
-    def __init__(self, eta=0.01, batch_size=32, n_iter=100, random_state=42):
+class RidgeLinearRegressionSGD(object):
+    def __init__(self, eta=0.01, alpha=0.001, batch_size=32, n_iter=100, random_state=42):
         self.eta = eta
+        self.alpha = alpha
         self.batch_size = batch_size
         self.n_iter = n_iter
         self.random_state = random_state
@@ -20,7 +21,8 @@ class LinearRegressionSGD(object):
                 X_batch = X[idx:idx + self.batch_size]
                 y_batch = y[idx:idx + self.batch_size]
                 diff = self.predict(X_batch) - y_batch
-                loss = self.eta * X_batch.T.dot(diff)
+                # ridge regression
+                loss = self.eta * X_batch.T.dot(diff) + 2 * ((self.alpha * self.w) ** 2).sum()
                 self.w -= loss
         return self
 
