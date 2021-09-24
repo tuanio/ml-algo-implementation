@@ -1,5 +1,14 @@
-Base class:
+# Linear Regression Module
+
+---
+
+## Base class
+
 - `LinearRegression`
-Child class:
+
+---
+
+## Child class
+
 - `RidgeRegressionMiniBatchSGD`
 - `LinearRegressionSGD`
