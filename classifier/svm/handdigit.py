@@ -25,7 +25,7 @@ predicted = svm.predict(Xtest)
 
 acc_train = svm.score(Xtrain, ytrain)
 acc_test = svm.score(Xtest, ytest)
-
+print(predicted)
 print(acc_train, acc_test)
 
 cfm = confusion_matrix(ytest, predicted)

@@ -1,31 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
-from logisticregression import LogisticRegression
-from sklearn.decomposition import PCA
-from sklearn.datasets import load_breast_cancer
-from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
+from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
-
-random_state = 12
-
-data = load_breast_cancer()
-X = PCA(2).fit_transform(data.data)
-X = StandardScaler().fit_transform(X)
-y = data.target
-
-Xtrain, Xtest, ytrain, ytest = train_test_split(
-    X, y, test_size=0.3, random_state=random_state)
-
-lr = LogisticRegression(n_iter=500, eta=0.001, random_state=random_state)
-lr.fit(Xtrain, ytrain)
-
-a_train = lr.score(Xtrain, ytrain)
-a_test = lr.score(Xtest, ytest)
-
+from sklearn.model_selection import train_test_split
 
 def plot_decision_regions(X, y, classifier, filename, resolution=0.02):
-
+    
     # setup marker generator and color map
     markers = ('s', 'x', 'o', '^', 'v')
     colors = ('red', 'blue', 'lightgreen', 'gray', 'cyan')
@@ -49,4 +31,21 @@ def plot_decision_regions(X, y, classifier, filename, resolution=0.02):
     plt.savefig('{}.png'.format(filename))
 
 
-plot_decision_regions(X, y, lr, 'lr_decision_boundary')
+data = load_iris()
+X = data.data[:, :2]
+y = data.target
+
+X_std = StandardScaler().fit_transform(X)
+Xtrain, Xtest, ytrain, ytest = train_test_split(X_std, y, test_size=0.2, random_state=1)
+
+svm = SVC(kernel='rbf', degree=1, random_state=1, gamma=0.45, C=0.8)
+svm.fit(Xtrain, ytrain)
+
+acc_train = svm.score(Xtrain, ytrain)
+acc_test = svm.score(Xtest, ytest)
+print(acc_train, acc_test)
+
+plot_decision_regions(X_std, y, svm, 'svm_iris')
+plt.xlabel('petal length [standardized]')
+plt.ylabel('petal width [standardized]')
+plt.show()
