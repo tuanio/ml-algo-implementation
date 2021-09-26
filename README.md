@@ -1,6 +1,6 @@
 # ML Algorithm Implementation
 
-This is the implementation of a set of machine learning algorithms.
+This is the set of machine learning algorithms implementation.
 
 ---
 
